@@ -23,11 +23,8 @@ class sllist{
 
         Iter& operator++()
         {
-            if (_ptr) {
-                _ptr = _ptr->_next;
-                return *this;
-            }
-            else return Iter{nullptr};
+            if (_ptr) _ptr = _ptr->_next;
+            return *this;
         }
 
         Iter& operator++(int)
@@ -48,8 +45,8 @@ public:
     Iter begin(){ return Iter{head}; }
     Iter end(){ return Iter{nullptr}; }
 
-    bool empty(){};
-    int size() {};
+    bool empty(){ return head == nullptr; };
+    int size(){ return  };
 
     info& at(const key& key1){};
     const info& at(const key& key1) const{};
