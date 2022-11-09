@@ -57,7 +57,9 @@ public:
     bool insert(const key& key1, const info& info1){};
     bool insert_or_assign(const key& key1, const info& info1){};
     bool emplace(const key& key1, info& info1){};
+    bool emplace(const key&& key1, info&& info1){};
     bool try_emplace(const key& key1, const info& info1){};
+    bool try_emplace(const key&& key1, info&& info1){};
 
     bool swap(sllist other){};
     bool merge(sllist other){};
