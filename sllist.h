@@ -11,7 +11,33 @@ class sllist{
 
     node* head;
 public:
-    ///methods to make out container useful ...///
+    bool empty(){};
+    int size() {};
+
+    info& at(const key& key1){};
+    const info& at(const key& key1) const{};
+    info& operator[](const key& key1){};
+    const info& operator[](const key& key1) const{};
+
+    bool clear(){};
+    bool insert(const key& key1, const info& info1){};
+    bool insert_or_assign(const key& key1, const info& info1){};
+    bool emplace(const key& key1, info& info1){};
+    bool try_emplace(const key& key1, const info& info1){};
+
+    bool swap(sllist other){};
+    bool merge(sllist other){};
+
+    bool contains(const key& key1){};
+    bool contains(const key& key1) const{};
+    bool find(const key& key1){};
+    bool find(const key& key1) const {};
+    bool count(const key& key1){};
+    bool count(const key& key1) const {};
+
+    bool operator==(sllist other){};
+    bool operator==(sllist other) const{};
+
 };
 
 #endif //LABS_SLLIST_H

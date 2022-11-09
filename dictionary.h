@@ -7,35 +7,35 @@
 
 template<typename key, typename info>
 class dictionary{
-    sllist<key, info> store;
+    sllist<key, info> container;
 
 public:
     bool empty(){};
     int size() {};
 
-    info& at(const key& key1){};
-    const info& at(const key& key1) const{};
-    info& operator[](const key& key1){};
-    const info& operator[](const key& key1) const{};
+    info& at(const key& key1){ return container.at(key1); };
+    const info& at(const key& key1) const {return container.at(key1); };
+    info& operator[](const key& key1){ return container[key1]; };
+    const info& operator[](const key& key1) const { return container[key1]; };
 
-    bool clear(){};
-    bool insert(const key& key1, const info& info1){};
-    bool insert_or_assign(const key& key1, const info& info1){};
-    bool emplace(const key& key1, info& info1){};
-    bool try_emplace(const key& key1, const info& info1){};
+    bool clear(){ container.clear(); };
+    bool insert(const key& key1, const info& info1){ container.insert(key1, info1); };
+    bool insert_or_assign(const key& key1, const info& info1){ container.insert_or_assign(key1, info1); };
+    bool emplace(const key& key1, info& info1){ container.emplace(key1, info1); };
+    bool try_emplace(const key& key1, const info& info1){ container.try_emplace(key1, info1); };
 
-    bool swap(dictionary other){};
-    bool merge(dictionary other){};
+    bool swap(dictionary other){ container.swap(other.container); };
+    bool merge(dictionary other){ container.merge(other.container); };
 
-    bool contains(const key& key1){};
-    bool contains(const key& key1) const{};
-    bool find(const key& key1){};
-    bool find(const key& key1) const {};
-    bool count(const key& key1){};
-    bool count(const key& key1) const {};
+    bool contains(const key& key1){ return container.contains(key1); };
+    bool contains(const key& key1) const{ return container.contains(key1); };
+    bool find(const key& key1){ return container.find(key1); };
+    bool find(const key& key1) const { return container.find(key1); };
+    bool count(const key& key1){ return container.count(key1); };
+    bool count(const key& key1) const { return container.count(key1); };
 
-    bool operator==(dictionary other){};
-    bool operator==(dictionary other) const{};
+    bool operator==(dictionary other){ return container == other.container; };
+    bool operator==(dictionary other) const { return container == other.container; };
 };
 
 
