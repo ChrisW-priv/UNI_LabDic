@@ -46,7 +46,7 @@ public:
     Iter end(){ return Iter{nullptr}; }
 
     bool empty(){ return head == nullptr; };
-    int size(){ return  };
+    int size(){ return 0; };
 
     info& at(const key& key1){};
     const info& at(const key& key1) const{};
