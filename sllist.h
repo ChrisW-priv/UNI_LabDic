@@ -10,7 +10,44 @@ class sllist{
     };
 
     node* head;
+
+    struct Iter{
+        node* _ptr;
+        explicit Iter(node* ptr) : _ptr(ptr){}
+
+        Iter& operator=(node* node_ptr)
+        {
+            this->_ptr = node_ptr;
+            return *this;
+        }
+
+        Iter& operator++()
+        {
+            if (_ptr) {
+                _ptr = _ptr->_next;
+                return *this;
+            }
+            else return Iter{nullptr};
+        }
+
+        Iter& operator++(int)
+        {
+            Iter iterator = *this;
+            ++*this;
+            return iterator;
+        }
+
+        bool operator==(const Iter& other){ return _ptr == other._ptr; }
+        bool operator!=(const Iter& other){ return _ptr != other._ptr; }
+
+        node& operator*(){ return *_ptr; }
+        node* operator->(){ return _ptr; }
+    };
+
 public:
+    Iter begin(){ return Iter{head}; }
+    Iter end(){ return Iter{nullptr}; }
+
     bool empty(){};
     int size() {};
 
