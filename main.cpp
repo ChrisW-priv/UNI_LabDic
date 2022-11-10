@@ -1,8 +1,7 @@
 #include <iostream>
-#include "tests.cpp"
+#include "tests.h"
 
 
 int main() {
-    std::cout << "Hello, World!" << std::endl;
-    return 0;
+    test_normal();
 }

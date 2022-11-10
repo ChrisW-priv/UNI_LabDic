@@ -10,8 +10,8 @@ class dictionary{
     sllist<key, info> container;
 
 public:
-    bool empty(){};
-    int size() {};
+    bool empty(){ return container.empty(); };
+    int size(){ return container.size(); };
 
     info& at(const key& key1){ return container.at(key1); };
     const info& at(const key& key1) const {return container.at(key1); };
@@ -29,14 +29,11 @@ public:
     bool swap(dictionary other){ return container.swap(other.container); };
     bool merge(dictionary other){ return container.merge(other.container); };
 
-    bool contains(const key& key1){ return container.contains(key1); };
     bool contains(const key& key1) const{ return container.contains(key1); };
     bool find(const key& key1){ return container.find(key1); };
     bool find(const key& key1) const { return container.find(key1); };
-    bool count(const key& key1){ return container.count(key1); };
-    bool count(const key& key1) const { return container.count(key1); };
+    int count(const key& key1) const { return container.count(key1); };
 
-    bool operator==(dictionary other){ return container == other.container; };
     bool operator==(dictionary other) const { return container == other.container; };
 };
 

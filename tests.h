@@ -1,4 +1,9 @@
+#ifndef TESTS
+#define TESTS
+
 #include "dictionary.h"
+#include <iostream>
+#include <map>
 
 // return codes tor tests:
 // 1 - success
@@ -30,4 +35,23 @@ bool test_3(){
     dic.emplace(1, 1);
     dic.emplace(1, 2);
 
+    return compare_with_expected(true, dic.contains(1));
 }
+
+template<typename iter>
+void print_map(iter begin, iter end){
+    while (begin != end){
+        std::cout << "Key:" << begin->first << " Value:" << begin->second << "\n";
+        ++begin;
+    }
+}
+
+void test_normal(){
+    std::map<int,int> dic;
+    dic.emplace(1,1);
+    dic.try_emplace(1, 1);
+
+    print_map(dic.begin(), dic.end());
+}
+
+#endif
