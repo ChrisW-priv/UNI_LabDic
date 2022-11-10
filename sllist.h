@@ -10,6 +10,8 @@ class sllist{
 
     node* head;
 
+public:
+
     struct Iter{
         node* _ptr;
         explicit Iter(node* ptr) : _ptr(ptr){}
@@ -28,7 +30,7 @@ class sllist{
             return *this;
         }
 
-        Iter& operator++(int)
+        Iter operator++(int)
         {
             Iter iterator = *this;
             ++*this;
@@ -44,7 +46,6 @@ class sllist{
 
     bool same_values(Iter begin1, Iter end1, Iter begin2);
 
-public:
     Iter begin(){ return Iter{head}; }
     Iter end(){ return Iter{nullptr}; }
 
@@ -68,8 +69,8 @@ public:
     bool merge(sllist other);
 
     bool contains(const key& key1) const;
-    bool find(const key& key1);
-    bool find(const key& key1) const;
+    Iter& find(const key& key1);
+    Iter& find(const key& key1) const;
     int count(const key& key1) const;
 
     bool operator==(const sllist& other) const { return this->size() == other.size() && same_values(this->begin(),
@@ -95,6 +96,11 @@ bool sllist<key, info>::same_values(sllist::Iter begin1, sllist::Iter end1, slli
         ++begin1; ++begin2;
     }
     return true;
+}
+
+template<typename key, typename info>
+sllist::Iter &sllist<key, info>::find(const key &key1) {
+    return <#initializer#>;
 }
 
 #endif //LABS_SLLIST_H
