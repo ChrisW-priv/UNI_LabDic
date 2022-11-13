@@ -16,7 +16,7 @@ public:
     info& at(const key& key1){ return container.at(key1); };
     const info& at(const key& key1) const {return container.at(key1); };
     info& operator[](const key& key1){ return container[key1]; };
-    const info& operator[](const key& key1) const { return container[key1]; };
+    info& operator[](key&& key1) { return container[key1]; };
 
     bool clear(){ return container.clear(); };
     bool insert(const key& key1, const info& info1){ return container.insert(key1, info1); };

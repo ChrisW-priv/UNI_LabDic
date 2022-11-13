@@ -11,22 +11,25 @@ class sllist{
     node* head;
 
 public:
+    // TODO: constructor, destructor, copy, operator=, destructor
 
     struct Iter{
-        node* _ptr;
-        explicit Iter(node* ptr) : _ptr(ptr){}
+        node* _ptrCurrent;
+        node* _ptrPrev;
+        explicit Iter(node* ptr) : _ptrCurrent(ptr){}
 
-        bool equal_values(Iter& other){ return _ptr && other._ptr && _ptr->pair == other._ptr->pair; }
+        /// In theory not a Typical operator member function but this will help with things later
+        bool equal_values(Iter& other){ return _ptrCurrent && other._ptrCurrent && _ptrCurrent->pair == other._ptrCurrent->pair; }
 
         Iter& operator=(node* node_ptr)
         {
-            this->_ptr = node_ptr;
+            this->_ptrCurrent = node_ptr;
             return *this;
         }
 
         Iter& operator++()
         {
-            if (_ptr) _ptr = _ptr->_next;
+            if (_ptrCurrent) _ptrCurrent = _ptrCurrent->_next;
             return *this;
         }
 
@@ -37,70 +40,78 @@ public:
             return iterator;
         }
 
-        bool operator==(const Iter& other){ return _ptr == other._ptr; }
-        bool operator!=(const Iter& other){ return _ptr != other._ptr; }
+        bool operator==(const Iter& other){ return _ptrCurrent == other._ptrCurrent; }
+        bool operator!=(const Iter& other){ return _ptrCurrent != other._ptrCurrent; }
 
-        node& operator*(){ return *_ptr; }
-        node* operator->(){ return _ptr; }
+        node& operator*(){ return *_ptrCurrent; }
+        node* operator->(){ return _ptrCurrent; }
     };
-
-    bool same_values(Iter begin1, Iter end1, Iter begin2);
 
     Iter begin(){ return Iter{head}; }
     Iter end(){ return Iter{nullptr}; }
 
-    bool empty(){ return head == nullptr; };
-    int size(){ return 0; };
+    [[nodiscard]] bool empty() const noexcept{ return head == nullptr; };
+    [[nodiscard]] size_t size() const noexcept{ return 0; };
 
-    info& at(const key& key1){};
-    const info& at(const key& key1) const{};
-    info& operator[](const key& key1){};
-    const info& operator[](const key& key1) const{};
+    info& at(const key& k);
+    const info& at(const key& k) const;
+    info& operator[](const key& k);
+    info& operator[](key&& k);
 
-    bool clear();
-    bool insert(const key& key1, const info& info1);
-    bool insert_or_assign(const key& key1, const info& info1);
-    bool emplace(const key& key1, info& info1);
-    bool emplace(const key&& key1, info&& info1);
-    bool try_emplace(const key& key1, const info& info1);
-    bool try_emplace(const key&& key1, info&& info1);
+    void clear() noexcept;
+    std::pair<Iter, bool> insert(std::pair<key, info>& pair);
+    std::pair<Iter, bool> insert(std::pair<key, info>&& pair);
+    std::pair<Iter, bool> insert_or_assign(const key& k, info& info1);
+    std::pair<Iter, bool> insert_or_assign(key&& k, info&& info1);
+    std::pair<Iter, bool> emplace(const key& k, info& info1);
+    std::pair<Iter, bool> emplace(key&& k, info&& info1);
+    Iter erase(const Iter pos);
+    Iter erase(const Iter first, const Iter last);
 
-    bool swap(sllist other);
-    bool merge(sllist other);
+    size_t erase(const key& k);
+    template<typename Pred>
+    Iter erase_if(Pred pred);
+    void swap(sllist& other) noexcept;
+    // Note: extract nodes is VERY difficult to do right (to ensure encapsulation and to allow data handling)
+    // proceed with caution and reed-up on what it really does!!
+    node& extract(const Iter pos);
+    node& extract(const key& k);
+    // should use extract as does the original method in c++ std::map
+    void merge(sllist& other);
+    void merge(sllist&& other);
 
-    bool contains(const key& key1) const;
-    Iter& find(const key& key1);
-    Iter& find(const key& key1) const;
-    int count(const key& key1) const;
+    Iter find(const key& k);
+    const Iter find(const key& k) const;
+    size_t count(const key& k) const;
+    bool contains(const key& k) const;
 
-    bool operator==(const sllist& other) const { return this->size() == other.size() && same_values(this->begin(),
-                                                                                                  this->end(),
-                                                                                                  other.begin());
-    };
+    bool operator==(const sllist& other) const;
+    bool operator<=>(const sllist& other) const;
 };
 
 template<typename key, typename info>
-bool sllist<key, info>::clear() {
+void sllist<key, info>::clear() noexcept {
     auto current = this->begin();
     while (current != this->end()){
-        delete current._ptr;
+        delete current._ptrCurrent;
+        current._ptrCurrent = nullptr;
         ++current;
     }
-    return true;
 }
 
 template<typename key, typename info>
-bool sllist<key, info>::same_values(sllist::Iter begin1, sllist::Iter end1, sllist::Iter begin2) {
-    while (begin1 != end1){
-        if (!begin1.equal_values(begin2)) return false;
-        ++begin1; ++begin2;
+bool sllist<key, info>::operator==(const sllist &other) const {
+    auto current1 = this->begin();
+    auto current2 = other.begin();
+    while (current1 != this->end() && current2 != other.end()){
+        auto eq = current1.equal_values(current2);
+        if (!eq) return false;
+        ++current1; ++current2;
     }
+    // check if there are still values in any of the container eg.: "abc" == "abcd" should be false!
+    if (current1 != this->end() || current2 != other.end()) return false;
     return true;
 }
 
-template<typename key, typename info>
-sllist::Iter &sllist<key, info>::find(const key &key1) {
-    return <#initializer#>;
-}
 
 #endif //LABS_SLLIST_H

@@ -47,11 +47,9 @@ void print_map(iter begin, iter end){
 }
 
 void test_normal(){
-    std::map<int,int> dic;
-    dic.emplace(1,1);
-    dic.try_emplace(1, 1);
-
-    print_map(dic.begin(), dic.end());
+    sllist<int,int> map{};
+    map.emplace(1,1);
+    print_map(map.begin(), map.end());
 }
 
 #endif
