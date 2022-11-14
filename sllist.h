@@ -11,25 +11,34 @@ class sllist{
     node* head;
 
 public:
-    // TODO: constructor, destructor, copy, operator=, destructor
+    // constructor
+    sllist();
+    sllist(std::initializer_list< std::pair<key,info> > list);
+    // copy
+    sllist(const sllist& list);
+    // destructor
+    ~sllist();
 
     struct Iter{
         node* _ptrCurrent;
         node* _ptrPrev;
-        explicit Iter(node* ptr) : _ptrCurrent(ptr){}
+
+        explicit Iter(node* ptr) : _ptrCurrent(ptr) {}
+        Iter(const Iter& other): _ptrCurrent(other._ptrCurrent), _ptrPrev(other._ptrPrev) {}
 
         /// In theory not a Typical operator member function but this will help with things later
         bool equal_values(Iter& other){ return _ptrCurrent && other._ptrCurrent && _ptrCurrent->pair == other._ptrCurrent->pair; }
 
         Iter& operator=(node* node_ptr)
         {
-            this->_ptrCurrent = node_ptr;
+            _ptrCurrent = node_ptr;
+            _ptrPrev = nullptr;
             return *this;
         }
 
         Iter& operator++()
         {
-            if (_ptrCurrent) _ptrCurrent = _ptrCurrent->_next;
+            if (_ptrCurrent) { _ptrPrev = _ptrCurrent; _ptrCurrent = _ptrCurrent->_next; }
             return *this;
         }
 
@@ -51,7 +60,7 @@ public:
     Iter end(){ return Iter{nullptr}; }
 
     [[nodiscard]] bool empty() const noexcept{ return head == nullptr; };
-    [[nodiscard]] size_t size() const noexcept{ return 0; };
+    [[nodiscard]] size_t size() const noexcept;
 
     info& at(const key& k);
     const info& at(const key& k) const;
@@ -69,8 +78,8 @@ public:
     Iter erase(const Iter first, const Iter last);
 
     size_t erase(const key& k);
-    template<typename Pred>
-    Iter erase_if(Pred pred);
+    template<typename UnaryF>
+    Iter erase_if(UnaryF unary_function);
     void swap(sllist& other) noexcept;
     // Note: extract nodes is VERY difficult to do right (to ensure encapsulation and to allow data handling)
     // proceed with caution and reed-up on what it really does!!
