@@ -112,10 +112,10 @@ public:
     void clear() noexcept;
     std::pair<Iter, bool> insert(std::pair<Key, Info>& pair);
     std::pair<Iter, bool> insert(std::pair<Key, Info>&& pair);
-    std::pair<Iter, bool> insert_or_assign(const Key& k, Info& info1);
-    std::pair<Iter, bool> insert_or_assign(Key&& k, Info&& info1);
-    std::pair<Iter, bool> emplace(const Key& k, Info& info1);
-    std::pair<Iter, bool> emplace(Key&& k, Info&& info1);
+    std::pair<Iter, bool> insert_or_assign(const Key& k, Info& Info1);
+    std::pair<Iter, bool> insert_or_assign(Key&& k, Info&& Info1);
+    std::pair<Iter, bool> emplace(const Key& k, Info& Info1);
+    std::pair<Iter, bool> emplace(Key&& k, Info&& Info1);
     Iter erase(const Iter pos);
     Iter erase(const Iter first, const Iter last);
     size_t erase(const Key& k);
@@ -136,36 +136,84 @@ public:
     bool contains(const Key& k) const;
 
     bool operator==(const sllist& other) const;
-    bool operator<=>(const sllist& other) const;
 };
 
-template<typename key, typename info>
-void sllist<key, info>::clear() noexcept {
-    auto current = this->begin();
-    while (current != this->end()){
+template<typename Key, typename Info>
+void sllist<Key, Info>::clear() noexcept {
+    auto current = begin();
+    while (current != end()){
         current.dealloc_node(); // changes value of current to next value after deletion, no ++curr needed!
     }
 }
 
-template<typename key, typename info>
-bool sllist<key, info>::operator==(const sllist &other) const {
-    auto current1 = this->begin();
+template<typename Key, typename Info>
+bool sllist<Key, Info>::operator==(const sllist &other) const {
+    auto current1 = begin();
     auto current2 = other.begin();
-    while (current1 != this->end() && current2 != other.end()){
+    while (current1 != end() && current2 != other.end()){
         auto eq = current1.equal_values(current2);
         if (!eq) return false;
         ++current1; ++current2;
     }
     // check if there are still values in any of the container eg.: "abc" == "abcd" should be false!
-    if (current1 != this->end() || current2 != other.end()) return false;
+    if (current1 != end() || current2 != other.end()) return false;
     return true;
 }
 
-template<typename key, typename info>
-size_t sllist<key, info>::size() const noexcept {
+template<typename Key, typename Info>
+size_t sllist<Key, Info>::size() const noexcept {
     size_t size = 0;
     for (auto node: *this) { size++; }
     return size;
+}
+
+template<typename Key, typename Info>
+typename sllist<Key,Info>::Iter sllist<Key, Info>::find(const Key &key) {
+    auto curr = begin();
+    while (curr != end()){
+        auto curr_key = (*curr).pair.first; // help with readability
+        if (curr_key == key) return curr;
+        ++curr;
+    }
+    return curr; // equal to end() Iter
+}
+
+template<typename Key, typename Info>
+const typename sllist<Key,Info>::Iter sllist<Key, Info>::find(const Key &k) const {
+    return find(k);
+}
+
+template<typename Key, typename Info>
+size_t sllist<Key, Info>::count(const Key &k) const {
+    auto found = find(k);
+    return found != end(); // true or false converted to size_t
+}
+
+template<typename Key, typename Info>
+bool sllist<Key, Info>::contains(const Key &k) const {
+    auto found = find(k);
+    return found != end();
+}
+
+template<typename Key, typename Info>
+void sllist<Key, Info>::swap(sllist &other) noexcept {
+    auto temp = this->head;
+    this->head = other.head;
+    other.head = temp;
+}
+
+template<typename Key, typename Info>
+Info &sllist<Key, Info>::operator[](const Key &k) {
+    auto position = find(k);
+    if (position == end()){
+        // init new node
+        node* new_node = new node;
+        new_node->pair.first = k;
+        new_node->pair.second = Info{};
+        position.insert_after(new_node);
+        return new_node->pair.second; // return new info reference
+    }
+    return (*position).pair.second; // return reference to an existing value
 }
 
 
