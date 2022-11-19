@@ -26,7 +26,7 @@ public:
     // copy
     sllist(const sllist& list);
     // destructor
-    ~sllist();
+    ~sllist() { clear(); }
 
     struct Iter{
         node** _ptr;
@@ -97,7 +97,7 @@ public:
         *iterator._ptr = node_ptr;
     }
 
-    node* alloc_node(const std::pair<Key, Info>& pair){
+    node* alloc_node(std::pair<Key, Info>&& pair){
         node* new_node = new node;
         new_node->pair = pair;
         return new_node;
@@ -152,7 +152,20 @@ public:
 
 template<typename Key, typename Info>
 sllist<Key, Info>::sllist(std::initializer_list<std::pair<Key, Info>> list) {
-    for (auto pair: list) {}
+    auto curr = begin();
+    for (auto pair: list) {
+        auto new_node = alloc_node(pair);
+        curr = insert_after(curr, new_node);
+    }
+}
+
+template<typename Key, typename Info>
+sllist<Key, Info>::sllist(const sllist &list) {
+    auto curr = begin();
+    for (auto node: list) {
+        auto new_node = alloc_node(node.pair);
+        curr = insert_after(curr, new_node);
+    }
 }
 
 template<typename Key, typename Info>
