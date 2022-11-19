@@ -154,5 +154,12 @@ bool sllist<key, info>::operator==(const sllist &other) const {
     return true;
 }
 
+template<typename key, typename info>
+size_t sllist<key, info>::size() const noexcept {
+    size_t size = 0;
+    for (auto node: *this) { size++; }
+    return size;
+}
+
 
 #endif //LABS_SLLIST_H
