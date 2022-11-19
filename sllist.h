@@ -110,7 +110,7 @@ public:
     Info& operator[](Key&& k);
 
     void clear() noexcept;
-    std::pair<Iter, bool> insert(std::pair<key, info>& pair);
+    std::pair<Iter, bool> insert(std::pair<Key, Info>& pair);
     std::pair<Iter, bool> insert(std::pair<Key, Info>&& pair);
     std::pair<Iter, bool> insert_or_assign(const Key& k, Info& info1);
     std::pair<Iter, bool> insert_or_assign(Key&& k, Info&& info1);
