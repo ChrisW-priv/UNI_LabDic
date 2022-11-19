@@ -1,10 +1,10 @@
 #ifndef LABS_SLLIST_H
 #define LABS_SLLIST_H
 
-template<typename key, typename info>
+template<typename Key, typename Info>
 class sllist{
     struct node {
-        std::pair<key, info> pair;
+        std::pair<Key, Info> pair;
         node* _next;
     };
 
@@ -13,7 +13,7 @@ class sllist{
 public:
     // constructor
     sllist(): head(nullptr) {};
-    sllist(std::initializer_list< std::pair<key,info> > list);
+    sllist(std::initializer_list< std::pair<Key, Info> > list);
     // copy
     sllist(const sllist& list);
     // destructor
@@ -104,36 +104,36 @@ public:
     [[nodiscard]] bool empty() const noexcept{ return head == nullptr; };
     [[nodiscard]] size_t size() const noexcept;
 
-    info& at(const key& k);
-    const info& at(const key& k) const;
-    info& operator[](const key& k);
-    info& operator[](key&& k);
+    Info& at(const Key& k);
+    const Info& at(const Key& k) const;
+    Info& operator[](const Key& k);
+    Info& operator[](Key&& k);
 
     void clear() noexcept;
     std::pair<Iter, bool> insert(std::pair<key, info>& pair);
-    std::pair<Iter, bool> insert(std::pair<key, info>&& pair);
-    std::pair<Iter, bool> insert_or_assign(const key& k, info& info1);
-    std::pair<Iter, bool> insert_or_assign(key&& k, info&& info1);
-    std::pair<Iter, bool> emplace(const key& k, info& info1);
-    std::pair<Iter, bool> emplace(key&& k, info&& info1);
+    std::pair<Iter, bool> insert(std::pair<Key, Info>&& pair);
+    std::pair<Iter, bool> insert_or_assign(const Key& k, Info& info1);
+    std::pair<Iter, bool> insert_or_assign(Key&& k, Info&& info1);
+    std::pair<Iter, bool> emplace(const Key& k, Info& info1);
+    std::pair<Iter, bool> emplace(Key&& k, Info&& info1);
     Iter erase(const Iter pos);
     Iter erase(const Iter first, const Iter last);
-    size_t erase(const key& k);
+    size_t erase(const Key& k);
     template<typename UnaryF>
     Iter erase_if(UnaryF unary_function);
     void swap(sllist& other) noexcept;
     // Note: extract nodes is VERY difficult to do right (to ensure encapsulation and to allow data handling)
     // proceed with caution and reed-up on what it really does!!
     node& extract(const Iter pos);
-    node& extract(const key& k);
+    node& extract(const Key& k);
     // should use extract as does the original method in c++ std::map
     void merge(sllist& other);
     void merge(sllist&& other);
 
-    Iter find(const key& k);
-    const Iter find(const key& k) const;
-    size_t count(const key& k) const;
-    bool contains(const key& k) const;
+    Iter find(const Key& k);
+    const Iter find(const Key& k) const;
+    size_t count(const Key& k) const;
+    bool contains(const Key& k) const;
 
     bool operator==(const sllist& other) const;
     bool operator<=>(const sllist& other) const;
