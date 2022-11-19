@@ -12,7 +12,7 @@ class sllist{
 
 public:
     // constructor
-    sllist();
+    sllist(): head(nullptr) {};
     sllist(std::initializer_list< std::pair<key,info> > list);
     // copy
     sllist(const sllist& list);
@@ -20,28 +20,31 @@ public:
     ~sllist();
 
     struct Iter{
-        node* _ptrCurrent;
-        node* _ptrPrev;
+        node** _ptr;
 
-        explicit Iter(node* ptr) : _ptrCurrent(ptr) {}
-        Iter(const Iter& other): _ptrCurrent(other._ptrCurrent), _ptrPrev(other._ptrPrev) {}
+        explicit Iter(node** ptr) : _ptr(ptr) {}
+        Iter(const Iter& other): _ptr(other._ptr) {}
 
         /// In theory not a Typical operator member function but this will help with things later
-        bool equal_values(Iter& other){ return _ptrCurrent && other._ptrCurrent && _ptrCurrent->pair == other._ptrCurrent->pair; }
+        bool equal_values(Iter& other){ return *_ptr && *(other._ptr) && (*_ptr)->pair == (*(other._ptr))->pair; }
 
         Iter& operator=(node* node_ptr)
         {
-            _ptrCurrent = node_ptr;
-            _ptrPrev = nullptr;
+            node_ptr->_next = *_ptr;
+            *_ptr = node_ptr;
             return *this;
         }
 
+        /// moves to the next node if it's possible
+        /// Note: this function already checks if the node is the last one (points to nullptr)
         Iter& operator++()
         {
-            if (_ptrCurrent) { _ptrPrev = _ptrCurrent; _ptrCurrent = _ptrCurrent->_next; }
+            if (*_ptr) { _ptr = (*_ptr)->_next; }
             return *this;
         }
 
+        /// Uses internal prefix operator++
+        /// \return value of the iterator before move
         Iter operator++(int)
         {
             Iter iterator = *this;
@@ -49,11 +52,25 @@ public:
             return iterator;
         }
 
-        bool operator==(const Iter& other){ return _ptrCurrent == other._ptrCurrent; }
-        bool operator!=(const Iter& other){ return _ptrCurrent != other._ptrCurrent; }
+        /// checks if pointers point to the same node
+        /// \param other Iter: iterator we compare with
+        /// \return bool, true if pointers point to the same node
+        bool operator==(const Iter& other){ return (*_ptr) == (*other._ptr); }
 
-        node& operator*(){ return *_ptrCurrent; }
-        node* operator->(){ return _ptrCurrent; }
+        /// opposite to operator==
+        /// \param other Iter: iterator we compare with
+        /// \return bool, true if pointers don't point to the same node
+        bool operator!=(const Iter& other){ return (*_ptr) != (*other._ptr); }
+
+        /// Returns reference to the node Iter points to
+        /// Caution: this results in the exposition of raw node type which is currently private
+        /// \return node reference
+        node& operator*(){ return **_ptr; }
+
+        /// Returns pointer to the node Iter points to
+        /// Caution: this results in the exposition of raw node type which is currently private
+        /// \return node ptr
+        node* operator->(){ return *_ptr; }
     };
 
     Iter begin(){ return Iter{head}; }
