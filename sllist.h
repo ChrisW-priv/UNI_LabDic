@@ -86,6 +86,16 @@ public:
             node_ptr->_next = *_ptr;
             *_ptr = node_ptr;
         }
+
+        /// Deallocates the node and links the nodes in the list
+        /// Same as operator++ - can be optimised after debugs to just body of if and skip if statements
+        void dealloc_node(){
+            if (*_ptr) {
+                auto next = (*_ptr)->_next;
+                delete *_ptr;
+                *_ptr = next;
+            } else return;
+        }
     };
 
     Iter begin(){ return Iter{head}; }
@@ -108,7 +118,6 @@ public:
     std::pair<Iter, bool> emplace(key&& k, info&& info1);
     Iter erase(const Iter pos);
     Iter erase(const Iter first, const Iter last);
-
     size_t erase(const key& k);
     template<typename UnaryF>
     Iter erase_if(UnaryF unary_function);
@@ -134,9 +143,7 @@ template<typename key, typename info>
 void sllist<key, info>::clear() noexcept {
     auto current = this->begin();
     while (current != this->end()){
-        delete current._ptrCurrent;
-        current._ptrCurrent = nullptr;
-        ++current;
+        current.dealloc_node(); // changes value of current to next value after deletion, no ++curr needed!
     }
 }
 
