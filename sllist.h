@@ -116,63 +116,43 @@ public:
     Iter begin(){ return Iter{head}; }
     Iter end(){ return Iter{nullptr}; }
 
-    [[nodiscard]] bool empty() const noexcept{ return head == nullptr; };
+    [[nodiscard]] bool empty() const noexcept { return head == nullptr; };
     [[nodiscard]] size_t size() const noexcept;
 
-    Info& at(const Key& k);
-    const Info& at(const Key& k) const;
-    Info& operator[](const Key& k);
-    Info& operator[](Key&& k);
+    /// returns position of where node is (or SHOULD be)
+    /// \param key key value to compare against
+    /// \return bool for if key is in the position, false otherwise
+    std::pair<Iter, bool> find(const Key& key);
+    Info& at(const Key& key);
+    Info& operator[](Key&& key);
+    Info& operator[](const Key& key) { return (*this)[std::move(key)]; }
 
     void clear() noexcept;
-    std::pair<Iter, bool> insert(std::pair<Key, Info>& pair);
+
     std::pair<Iter, bool> insert(std::pair<Key, Info>&& pair);
-    std::pair<Iter, bool> insert_or_assign(const Key& k, Info& Info1);
-    std::pair<Iter, bool> insert_or_assign(Key&& k, Info&& Info1);
-    std::pair<Iter, bool> emplace(const Key& k, Info& Info1);
-    std::pair<Iter, bool> emplace(Key&& k, Info&& Info1);
-    Iter erase(const Iter pos);
-    Iter erase(const Iter first, const Iter last);
+    std::pair<Iter, bool> insert(std::pair<Key, Info>& pair) { return insert(std::move(pair)); };
+
+    std::pair<Iter, bool> insert_or_assign(Key&& key, Info&& info);
+    std::pair<Iter, bool> insert_or_assign(const Key& key, Info& info) { return insert_or_assign(key, info); };
+
+    std::pair<Iter, bool> emplace(Key&& key, Info&& info);
+    std::pair<Iter, bool> emplace(const Key& key, Info& info) { return emplace(key, info); };
+
+    Iter erase(Iter pos);
+    Iter erase(Iter first, const Iter& last);
     size_t erase(const Key& k);
-    template<typename UnaryF>
-    Iter erase_if(UnaryF unary_function);
+
     void swap(sllist& other) noexcept;
-    // Note: extract nodes is VERY difficult to do right (to ensure encapsulation and to allow data handling)
-    // proceed with caution and reed-up on what it really does!!
-    node& extract(const Iter pos);
-    node& extract(const Key& k);
-    // should use extract as does the original method in c++ std::map
-    void merge(sllist& other);
-    void merge(sllist&& other);
 
-    Iter find(const Key& k);
-    const Iter find(const Key& k) const;
-    size_t count(const Key& k) const;
-    bool contains(const Key& k) const;
+    size_t count(const Key& key) const { return std::count(begin(), end(), {key, {}}); };
+    bool contains(const Key& key) const { return std::find(begin(), end(), {key, {}}) != end(); };
 
-    bool operator==(const sllist& other) const;
+    bool operator==(const sllist& other) const { return std::equal(begin(), end(), other.end()); }
 };
 
 template<typename Key, typename Info>
-void sllist<Key, Info>::clear() noexcept {
-    auto current = begin();
-    while (current != end()){
-        dealloc_node(current); // changes value of current to next value after deletion, no ++curr needed!
-    }
-}
-
-template<typename Key, typename Info>
-bool sllist<Key, Info>::operator==(const sllist &other) const {
-    auto current1 = begin();
-    auto current2 = other.begin();
-    while (current1 != end() && current2 != other.end()){
-        auto eq = equal_values(current1, current2);
-        if (!eq) return false;
-        ++current1; ++current2;
-    }
-    // check if there are still values in any of the container eg.: "abc" == "abcd" should be false!
-    if (current1 != end() || current2 != other.end()) return false;
-    return true;
+sllist<Key, Info>::sllist(std::initializer_list<std::pair<Key, Info>> list) {
+    for (auto pair: list) {}
 }
 
 template<typename Key, typename Info>
@@ -183,25 +163,87 @@ size_t sllist<Key, Info>::size() const noexcept {
 }
 
 template<typename Key, typename Info>
-typename sllist<Key,Info>::Iter sllist<Key, Info>::find(const Key &key) {
-    return std::find(begin(), end(), key);
+std::pair<typename sllist<Key,Info>::Iter, bool> sllist<Key, Info>::find(const Key &key) {
+    node compare{ {key, {}} };
+    auto curr = begin();
+    for (; curr != end(); ++curr){
+        if (*curr == compare) return {curr, true};
+        if (*curr > compare)  return {curr, false}; // stop early - we here we know that this element should be here but is not
+    }
+    return {curr, false}; // curr = end() so element not found
 }
 
 template<typename Key, typename Info>
-const typename sllist<Key,Info>::Iter sllist<Key, Info>::find(const Key &k) const {
-    return find(k);
+Info& sllist<Key, Info>::at(const Key &key) {
+    auto [position, found] = find(key);
+    if (!found) throw std::out_of_range("Element not in the container");
+    return (*position).pair.second;
 }
 
 template<typename Key, typename Info>
-size_t sllist<Key, Info>::count(const Key &k) const {
-    auto found = find(k);
-    return found != end(); // true or false converted to size_t
+Info &sllist<Key, Info>::operator[](Key&& key) {
+    auto [position, found] = find(key);
+    if (!found){
+        auto new_node = alloc_node( {key, {}} );
+        insert_after(position, new_node);
+        return new_node->pair.second; // return new info reference
+    }
+    return (*position).pair.second; // return reference to an existing value
 }
 
 template<typename Key, typename Info>
-bool sllist<Key, Info>::contains(const Key &k) const {
-    auto found = find(k);
-    return found != end();
+void sllist<Key, Info>::clear() noexcept {
+    auto current = begin();
+    while (current != end()){
+        dealloc_node(current); // changes value of current to next value after deletion, no ++curr needed!
+    }
+}
+
+template<typename Key, typename Info>
+std::pair<typename sllist<Key,Info>::Iter, bool> sllist<Key, Info>::insert(std::pair<Key, Info> &&pair) {
+    auto [position, found] = find(pair.first);
+    if (found) return {position, false};
+    auto new_node = alloc_node(pair);
+    insert_after(position, new_node);
+    return {new_node, true};
+}
+
+template<typename Key, typename Info>
+std::pair<typename sllist<Key,Info>::Iter, bool> sllist<Key, Info>::insert_or_assign(Key &&key, Info&& info) {
+    auto [position, found] = find(key);
+    if (found) { *position.pair.second = info; return {position, false}; }
+    auto new_node = alloc_node({key, info});
+    insert_after(position, new_node);
+    return {new_node, true};
+}
+
+template<typename Key, typename Info>
+std::pair<typename sllist<Key,Info>::Iter, bool> sllist<Key, Info>::emplace(Key &&key, Info &&info) {
+    auto [position, found] = find(key);
+    if (found) return {position, false};
+    auto new_node = alloc_node({key, info});
+    insert_after(position, new_node);
+    return {new_node, true};
+}
+
+template<typename Key, typename Info>
+typename sllist<Key,Info>::Iter sllist<Key, Info>::erase(sllist::Iter pos) {
+    dealloc_node(pos);
+    return pos;
+}
+
+template<typename Key, typename Info>
+typename sllist<Key,Info>::Iter sllist<Key, Info>::erase(sllist::Iter first, const sllist::Iter& last) {
+    while (first != last) { dealloc_node(first); }
+    return first;
+}
+
+template<typename Key, typename Info>
+size_t sllist<Key, Info>::erase(const Key &key) {
+    auto [position, found] = find(key);
+    if (!found) return 0;
+    dealloc_node(position);
+    return 1;
 }
 
 template<typename Key, typename Info>
@@ -211,16 +253,14 @@ void sllist<Key, Info>::swap(sllist &other) noexcept {
     other.head = temp;
 }
 
-template<typename Key, typename Info>
-Info &sllist<Key, Info>::operator[](const Key &k) {
-    auto position = find(k);
-    if (position == end()){
-        node* new_node = alloc_node( {k, {}} );
-        insert_after(position, new_node);
-        return new_node->pair.second; // return new info reference
+template< class Key, class Info, class Pred >
+size_t erase_if( sllist<Key, Info>& c, Pred pred ){
+    size_t count = 0;
+    for (auto curr = c.begin(); curr != c.end();){
+        if (pred((*curr).pair)) { ++count; c.erase(curr); }
+        else ++curr;
     }
-    return (*position).pair.second; // return reference to an existing value
-}
-
+    return count;
+};
 
 #endif //LABS_SLLIST_H
