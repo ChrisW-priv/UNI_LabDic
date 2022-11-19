@@ -6,6 +6,8 @@ class sllist{
     struct node {
         std::pair<Key, Info> pair;
         node* _next;
+
+        bool operator==(const node& other) { return pair == other.pair; }
     };
 
     node* head;
@@ -169,13 +171,7 @@ size_t sllist<Key, Info>::size() const noexcept {
 
 template<typename Key, typename Info>
 typename sllist<Key,Info>::Iter sllist<Key, Info>::find(const Key &key) {
-    auto curr = begin();
-    while (curr != end()){
-        auto curr_key = (*curr).pair.first; // help with readability
-        if (curr_key == key) return curr;
-        ++curr;
-    }
-    return curr; // equal to end() Iter
+    return std::find(begin(), end(), key);
 }
 
 template<typename Key, typename Info>
