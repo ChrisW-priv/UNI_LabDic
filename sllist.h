@@ -28,9 +28,16 @@ public:
         /// In theory not a Typical operator member function but this will help with things later
         bool equal_values(Iter& other){ return *_ptr && *(other._ptr) && (*_ptr)->pair == (*(other._ptr))->pair; }
 
+        /// Insert new node at the place of the old one
+        /// deallocates the old one and sets new node in place while preserving order of list
         Iter& operator=(node* node_ptr)
         {
-            node_ptr->_next = *_ptr;
+            node** next;
+            if (*_ptr){
+                next = (*_ptr)->_next;
+                delete *_ptr; // deallocate current node
+            } else { next = nullptr; } // nothing to deallocate if curr == null!
+            node_ptr->_next = next;
             *_ptr = node_ptr;
             return *this;
         }
