@@ -7,7 +7,7 @@ class sllist{
         std::pair<Key, Info> pair;
         node* _next;
 
-        /// Ew want to order nodes by the values of keys
+        /// We want to order nodes by the values of keys
         bool operator==(const node& other) const { return pair.first == other.pair.first; }
         std::partial_ordering operator<=>(const node& other) const {
             if (pair.first < other.pair.first) return std::partial_ordering::less;
