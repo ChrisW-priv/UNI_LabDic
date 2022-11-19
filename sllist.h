@@ -78,27 +78,33 @@ public:
         /// Caution: this results in the exposition of raw node type which is currently private
         /// \return node ptr
         node* operator->(){ return *_ptr; }
-
-        /// In theory not a Typical operator member function but this will help with things later
-        bool equal_values(Iter& other){ return *_ptr && *(other._ptr) && (*_ptr)->pair == (*(other._ptr))->pair; }
-
-        /// inserts node under pointer after current element.
-        /// WARNING: will cause segFault if node_ptr = nullptr!!
-        void insert_after(node* node_ptr){
-            node_ptr->_next = *_ptr;
-            *_ptr = node_ptr;
-        }
-
-        /// Deallocates the node and links the nodes in the list
-        /// Same as operator++ - can be optimised after debugs to just body of if and skip if statements
-        void dealloc_node(){
-            if (*_ptr) {
-                auto next = (*_ptr)->_next;
-                delete *_ptr;
-                *_ptr = next;
-            } else return;
-        }
     };
+
+    /// checks if values under both iterators are the same
+    bool equal_values(Iter i1, Iter i2){ return *(i1._ptr) && *(i2._ptr) && *i1._ptr == *i2._ptr; }
+
+    /// inserts node under pointer after iterator element.
+    /// WARNING: will cause segFault if node_ptr = nullptr!!
+    void insert_after(Iter iterator, node* node_ptr){
+        node_ptr->_next = *(iterator._ptr);
+        *iterator._ptr = node_ptr;
+    }
+
+    node* alloc_node(const std::pair<Key, Info>& pair){
+        node* new_node = new node;
+        new_node->pair = pair;
+        return new_node;
+    }
+
+    /// Deallocates the node and links the nodes in the list
+    /// Same as operator++ - can be optimised after debugs to just body of if and skip if statements
+    void dealloc_node(Iter iterator){
+        if (*iterator._ptr) {
+            auto next = (*iterator._ptr)->_next;
+            delete *iterator._ptr;
+            *iterator._ptr = next;
+        } else return;
+    }
 
     Iter begin(){ return Iter{head}; }
     Iter end(){ return Iter{nullptr}; }
@@ -144,7 +150,7 @@ template<typename Key, typename Info>
 void sllist<Key, Info>::clear() noexcept {
     auto current = begin();
     while (current != end()){
-        current.dealloc_node(); // changes value of current to next value after deletion, no ++curr needed!
+        dealloc_node(current); // changes value of current to next value after deletion, no ++curr needed!
     }
 }
 
@@ -153,7 +159,7 @@ bool sllist<Key, Info>::operator==(const sllist &other) const {
     auto current1 = begin();
     auto current2 = other.begin();
     while (current1 != end() && current2 != other.end()){
-        auto eq = current1.equal_values(current2);
+        auto eq = equal_values(current1, current2);
         if (!eq) return false;
         ++current1; ++current2;
     }
@@ -202,11 +208,8 @@ template<typename Key, typename Info>
 Info &sllist<Key, Info>::operator[](const Key &k) {
     auto position = find(k);
     if (position == end()){
-        // init new node
-        node* new_node = new node;
-        new_node->pair.first = k;
-        new_node->pair.second = Info{};
-        position.insert_after(new_node);
+        node* new_node = alloc_node( {k, {}} );
+        insert_after(position, new_node);
         return new_node->pair.second; // return new info reference
     }
     return (*position).pair.second; // return reference to an existing value
