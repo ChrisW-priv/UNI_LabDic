@@ -25,9 +25,6 @@ public:
         explicit Iter(node** ptr) : _ptr(ptr) {}
         Iter(const Iter& other): _ptr(other._ptr) {}
 
-        /// In theory not a Typical operator member function but this will help with things later
-        bool equal_values(Iter& other){ return *_ptr && *(other._ptr) && (*_ptr)->pair == (*(other._ptr))->pair; }
-
         /// Insert new node at the place of the old one
         /// deallocates the old one and sets new node in place while preserving order of list
         Iter& operator=(node* node_ptr)
@@ -44,6 +41,7 @@ public:
 
         /// moves to the next node if it's possible
         /// Note: this function already checks if the node is the last one (points to nullptr)
+        /// Note: when debugging is done, body can be changed to just _ptr = `(*_ptr)->_next;` for better performance
         Iter& operator++()
         {
             if (*_ptr) { _ptr = (*_ptr)->_next; }
@@ -78,6 +76,16 @@ public:
         /// Caution: this results in the exposition of raw node type which is currently private
         /// \return node ptr
         node* operator->(){ return *_ptr; }
+
+        /// In theory not a Typical operator member function but this will help with things later
+        bool equal_values(Iter& other){ return *_ptr && *(other._ptr) && (*_ptr)->pair == (*(other._ptr))->pair; }
+
+        /// inserts node under pointer after current element.
+        /// WARNING: will cause segFault if node_ptr = nullptr!!
+        void insert_after(node* node_ptr){
+            node_ptr->_next = *_ptr;
+            *_ptr = node_ptr;
+        }
     };
 
     Iter begin(){ return Iter{head}; }
