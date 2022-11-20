@@ -125,6 +125,11 @@ public:
     /// \param key key value to compare against
     /// \return bool for if key is in the position, false otherwise
     std::pair<Iter, bool> find(const Key& key);
+    /// returns position of where node is (or SHOULD be)
+    /// \param key key value to compare against
+    /// \return bool for if key is in the position, false otherwise
+    std::pair<const Iter, bool> find(const Key& key) const { return find(key); };
+
     Info& at(const Key& key);
     Info& operator[](Key&& key);
     Info& operator[](const Key& key) { return (*this)[std::move(key)]; }
