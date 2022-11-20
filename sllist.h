@@ -58,16 +58,18 @@ public:
     // destructor
     ~sllist() { clear(); }
 
-    struct Iter : std::iterator<std::forward_iterator_tag, node, node, node>{
-        node** _ptr;
+    template<typename PtrType>
+    struct Iterator : std::iterator<std::forward_iterator_tag, PtrType, PtrType, PtrType>{
+        PtrType** _ptr;
         using iterator_category = std::forward_iterator_tag;
 
-        explicit Iter(node* ptr) { *_ptr = ptr; }
-        Iter(const Iter& other): _ptr(other._ptr) {}
+        explicit Iterator(PtrType** ptr) { _ptr = ptr; }
+        explicit Iterator(PtrType* const* ptr) { _ptr = ptr; }
+        Iterator(Iterator<PtrType>& other): _ptr(other._ptr) {}
 
         /// Insert new node at the place of the old one
         /// deallocates the old one and sets new node in place while preserving order of list
-        Iter& operator=(node* node_ptr)
+        Iterator& operator=(node* node_ptr)
         {
             dealloc_node(_ptr);
             node_ptr->_next = *_ptr;
@@ -78,7 +80,7 @@ public:
         /// moves to the next node if it's possible
         /// Note: this function already checks if the node is the last one (points to nullptr)
         /// Note: when debugging is done, body can be changed to just _ptr = `(*_ptr)->_next;` for better performance
-        Iter& operator++()
+        Iterator& operator++()
         {
             if (*_ptr) { *_ptr = (*_ptr)->_next; }
             return *this;
@@ -86,9 +88,9 @@ public:
 
         /// Uses internal prefix operator++
         /// \return value of the iterator before move
-        Iter operator++(int)
+        Iterator operator++(int)
         {
-            Iter iterator = *this;
+            Iterator iterator = *this;
             ++*this;
             return iterator;
         }
@@ -96,27 +98,30 @@ public:
         /// checks if pointers point to the same node
         /// \param other Iter: iterator we compare with
         /// \return bool, true if pointers point to the same node
-        bool operator==(const Iter& other){ return (*_ptr) == *(other._ptr); }
+        bool operator==(const Iterator& other){ return (*_ptr) == *(other._ptr); }
 
         /// opposite to operator==
         /// \param other Iter: iterator we compare with
         /// \return bool, true if pointers don't point to the same node
-        bool operator!=(const Iter& other){ return (*_ptr) != *(other._ptr); }
+        bool operator!=(const Iterator& other){ return (*_ptr) != *(other._ptr); }
 
         /// Returns reference to the pair under node it points to
         /// \return reference to pair under node
         /// WARNING: will segfault if iter == end()!!!
-        node& operator*(){ return **_ptr; }
+        PtrType& operator*(){ return **_ptr; }
 
         /// Returns pointer to node under iter
         /// \return pointer to node under iter
-        node* operator->(){ return *_ptr; }
+        PtrType* operator->(){ return *_ptr; }
     };
 
-    Iter begin(){ return Iter{head}; }
-    Iter begin() const { return Iter{head}; }
+    typedef Iterator<node> Iter;
+    typedef Iterator<const node> constIter;
+
+    Iter begin(){ return Iter{&head}; }
+    constIter begin() const { return constIter{&head}; }
     Iter end(){ return Iter{nullptr}; }
-    Iter end() const{ return Iter{nullptr}; }
+    constIter end() const{ return constIter{nullptr}; }
 
     [[nodiscard]] bool empty() const noexcept { return head == nullptr; };
     [[nodiscard]] size_t size() const noexcept;
@@ -225,9 +230,10 @@ template<typename Key, typename Info>
 std::pair<typename sllist<Key,Info>::Iter, bool> sllist<Key, Info>::insert(std::pair<Key, Info> &&pair) {
     auto [position, found] = find(pair.first);
     if (found) return {position, false};
-    auto new_node = alloc_node(pair);
+    auto new_node = alloc_node(std::move(pair));
     insert_after(position, new_node);
-    return {new_node, true};
+    ++position; // points to our new_node
+    return std::make_pair(position, true);
 }
 
 template<typename Key, typename Info>
@@ -236,7 +242,8 @@ std::pair<typename sllist<Key,Info>::Iter, bool> sllist<Key, Info>::insert_or_as
     if (found) { (*position).pair.second = info; return {position, false}; }
     auto new_node = alloc_node({key, info});
     insert_after(position, new_node);
-    return {new_node, true};
+    ++position; // points to our new_node
+    return std::make_pair(position, true);
 }
 
 template<typename Key, typename Info>
@@ -245,7 +252,8 @@ std::pair<typename sllist<Key,Info>::Iter, bool> sllist<Key, Info>::emplace(Key 
     if (found) return std::make_pair(position, false);
     auto new_node = alloc_node({key, info});
     insert_after(position, new_node);
-    return std::make_pair(Iter{new_node}, true);
+    ++position; // points to our new_node
+    return std::make_pair(position, true);
 }
 
 template<typename Key, typename Info>

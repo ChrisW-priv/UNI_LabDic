@@ -10,33 +10,25 @@
 // 0 - fail
 
 template<typename T>
-bool compare_with_expected(T value_expected, T value_returned){
-    return value_expected == value_returned;
+void compare_with_expected(T value_expected, T value_returned){
+    std::cout << ((value_expected == value_returned) ? "PASS" : "FAIL");
 }
 
-bool test_1(){
+void run_tests(){
     dictionary<int, int> dic{};
-    bool ret = dic.empty();
 
-    return compare_with_expected(true, ret);
+    bool ret1 = dic.empty();
+    compare_with_expected(true, ret1);
+
+    size_t ret2 = dic.size();
+    compare_with_expected((size_t) 0, ret2);
+
+    std::pair p1{1,1};
+    std::pair p2{2,2};
+    dic.insert(p1);
+    dic.insert(p2);
+    compare_with_expected(true, dic.contains(1));
 };
-
-
-bool test_2(){
-    dictionary<int, int> dic{};
-    int ret = dic.size();
-
-    return compare_with_expected(0, ret);
-};
-
-
-bool test_3(){
-    dictionary<int, int> dic{};
-    dic.emplace(1, 1);
-    dic.emplace(1, 2);
-
-    return compare_with_expected(true, dic.contains(1));
-}
 
 template<typename iter>
 void print_map(iter begin, iter end){

@@ -40,14 +40,14 @@ public:
 
     void clear() noexcept { container.clear(); };
 
-    std::pair<Iter, bool> insert(std::pair<Key, Info>&& pair) { return container.insert(); };
-    std::pair<Iter, bool> insert(std::pair<Key, Info>& pair) { return insert(std::move(pair)); };
+    std::pair<Iter, bool> insert(std::pair<Key, Info>&& pair) { return container.insert(pair); };
+    std::pair<Iter, bool> insert(std::pair<Key, Info>& pair) { return container.insert(std::move(pair)); };
 
-    std::pair<Iter, bool> insert_or_assign(Key&& key, Info&& info) { return insert_or_assign(key, info); };
-    std::pair<Iter, bool> insert_or_assign(const Key& key, Info& info) { return insert_or_assign(key, info); };
+    std::pair<Iter, bool> insert_or_assign(Key&& key, Info&& info) { return container.insert_or_assign(key, info); };
+    std::pair<Iter, bool> insert_or_assign(const Key& key, Info& info) { return container.insert_or_assign(key, info); };
 
-    std::pair<Iter, bool> emplace(Key&& key, Info&& info) { return emplace(key, info); };
-    std::pair<Iter, bool> emplace(const Key& key, Info& info) { return emplace(key, info); };
+    std::pair<Iter, bool> emplace(Key&& key, Info&& info) { return container.emplace(key, info); };
+    std::pair<Iter, bool> emplace(const Key& key, Info& info) { return container.emplace(key, info); };
 
     Iter erase(Iter pos) { return container.erase(pos); };
     Iter erase(Iter first, const Iter& last) { return container.erase(first, last); };
@@ -55,11 +55,11 @@ public:
 
     void swap(dictionary& other) noexcept { container.swap(other); };
 
-    size_t count(const Key& key) const { return std::count(begin(), end(), {key, {}}); };
+    size_t count(const Key& key) const { return container.count(key); };
     bool contains(const Key& key) const { return container.contains(key); };
 
-    bool operator==(const dictionary& other) const { return std::equal(begin(), end(), other.end()); }
-    bool operator!=(const dictionary& other) const { return !std::equal(begin(), end(), other.end()); }
+    bool operator==(const dictionary& other) const { return container == other.container; }
+    bool operator!=(const dictionary& other) const { return container != other.container; }
 };
 
 

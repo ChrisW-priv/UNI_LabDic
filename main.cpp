@@ -3,5 +3,5 @@
 
 
 int main() {
-    test_normal();
+    run_tests();
 }
