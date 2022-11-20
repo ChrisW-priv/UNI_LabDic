@@ -60,11 +60,10 @@ public:
 
     template<typename PtrType>
     struct Iterator : std::iterator<std::forward_iterator_tag, PtrType, PtrType, PtrType>{
-        PtrType** _ptr;
+        PtrType _ptr;
         using iterator_category = std::forward_iterator_tag;
 
-        explicit Iterator(PtrType** ptr) { _ptr = ptr; }
-        explicit Iterator(PtrType* const* ptr) { _ptr = ptr; }
+        explicit Iterator(PtrType ptr) { _ptr = ptr; }
         Iterator(Iterator<PtrType>& other): _ptr(other._ptr) {}
 
         /// Insert new node at the place of the old one
@@ -82,7 +81,7 @@ public:
         /// Note: when debugging is done, body can be changed to just _ptr = `(*_ptr)->_next;` for better performance
         Iterator& operator++()
         {
-            if (*_ptr) { *_ptr = (*_ptr)->_next; }
+            if (*_ptr) { _ptr = &(*_ptr)->_next; }
             return *this;
         }
 
@@ -108,15 +107,15 @@ public:
         /// Returns reference to the pair under node it points to
         /// \return reference to pair under node
         /// WARNING: will segfault if iter == end()!!!
-        PtrType& operator*(){ return **_ptr; }
+        node& operator*(){ return **_ptr; }
 
         /// Returns pointer to node under iter
         /// \return pointer to node under iter
-        PtrType* operator->(){ return *_ptr; }
+        node* operator->(){ return *_ptr; }
     };
 
-    typedef Iterator<node> Iter;
-    typedef Iterator<const node> constIter;
+    typedef Iterator<node**> Iter;
+    typedef Iterator<node* const*> constIter;
 
     Iter begin(){ return Iter{&head}; }
     constIter begin() const { return constIter{&head}; }
