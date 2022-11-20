@@ -55,12 +55,11 @@ public:
         /// deallocates the old one and sets new node in place while preserving order of list
         Iter& operator=(node* node_ptr)
         {
-            node** next;
             if (*_ptr){
-                next = (*_ptr)->_next;
+                auto next = (*_ptr)->_next;
                 delete *_ptr; // deallocate current node
-            } else { next = nullptr; } // nothing to deallocate if curr == null!
-            node_ptr->_next = next;
+                node_ptr->_next = next;
+            } else { node_ptr->_next = nullptr;} // nothing to deallocate if curr == null!
             *_ptr = node_ptr;
             return *this;
         }
@@ -233,12 +232,8 @@ std::pair<typename sllist<Key,Info>::Iter, bool> sllist<Key, Info>::emplace(Key 
 
 template<typename Key, typename Info>
 typename sllist<Key,Info>::Iter sllist<Key, Info>::erase(sllist::Iter pos) {
-    if (pos != end()) {
-        auto next = (*pos._ptr)->_next;
-        delete *pos._ptr;
-        *pos._ptr = next;
-    }
-
+    // here I abuse the notation with operator= of Iter
+    if (pos != end()) { pos = (*pos._ptr)->_next; }
     return pos;
 }
 
