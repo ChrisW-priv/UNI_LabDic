@@ -13,7 +13,7 @@ class sllist{
         node(Key&& key, Info&& info): pair(key,info) {}
         node(const Key& key, const Info& info): pair(key,info) {}
         explicit node(std::pair<Key, Info>&& p): pair(p) {};
-        node(const std::pair<Key, Info>& p): pair(p) {};
+        explicit node(const std::pair<Key, Info>& p): pair(p) {};
 
         /// We want to order nodes by the values of keys
         bool operator==(const node& other) const { return pair.first == other.pair.first; }
@@ -58,7 +58,7 @@ public:
     // destructor
     ~sllist() { clear(); }
 
-    struct Iter{
+    struct Iter : std::iterator<std::forward_iterator_tag, node, node, node>{
         node** _ptr;
         using iterator_category = std::forward_iterator_tag;
 
@@ -146,8 +146,8 @@ public:
 
     void swap(sllist& other) noexcept;
 
-    size_t count(const Key& key) const { return std::count(begin(), end(), {key, {}}); };
-    bool contains(const Key& key) const { return std::find(begin(), end(), {key, {}}) != end(); };
+    size_t count(const Key& key) const { return std::count(begin(), end(), node{key, Info{}}); };
+    bool contains(const Key& key) const { return std::find(begin(), end(), node{key, Info{}}) != end(); };
 
     bool operator==(const sllist& other) const { return std::equal(begin(), end(), other.begin()); }
     bool operator!=(const sllist& other) const { return !std::equal(begin(), end(), other.begin()); }

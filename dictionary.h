@@ -14,7 +14,7 @@ public:
     // constructor
     dictionary(): container() {};
     dictionary(std::initializer_list< std::pair<Key, Info> >&& list): container(list) {};
-    dictionary(sllist<Key, Info>& list) :container() { container.swap(list); }
+    explicit dictionary(sllist<Key, Info>& list) :container() { container.swap(list); }
 
     // copy
     dictionary(const dictionary& list): container(list.container) {};
