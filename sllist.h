@@ -139,6 +139,7 @@ public:
     bool contains(const Key& key) const { return std::find(begin(), end(), {key, {}}) != end(); };
 
     bool operator==(const sllist& other) const { return std::equal(begin(), end(), other.end()); }
+    bool operator!=(const sllist& other) const { return !std::equal(begin(), end(), other.end()); }
 };
 
 template<typename Key, typename Info>
