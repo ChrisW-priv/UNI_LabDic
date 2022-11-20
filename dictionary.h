@@ -5,37 +5,70 @@
 // Methods inspired by https://en.cppreference.com/w/cpp/container/map which is a much better version to what we will do
 
 
-template<typename key, typename info>
+template<typename Key, typename Info>
 class dictionary{
-    sllist<key, info> container;
+    sllist<Key, Info> container;
+    using Iter=typename sllist<Key, Info>::Iter;
 
 public:
-    bool empty(){ return container.empty(); };
-    int size(){ return container.size(); };
+    // constructor
+    dictionary(): container() {};
+    dictionary(std::initializer_list< std::pair<Key, Info> >&& list): container(list) {};
+    dictionary(sllist<Key, Info>& list) :container() { container.swap(list); }
 
-    info& at(const key& key1){ return container.at(key1); };
-    const info& at(const key& key1) const {return container.at(key1); };
-    info& operator[](const key& key1){ return container[key1]; };
-    info& operator[](key&& key1) { return container[key1]; };
+    // copy
+    dictionary(const dictionary& list): container(list.container) {};
+    // destructor
+    ~dictionary() { clear(); }
 
-    bool clear(){ return container.clear(); };
-    bool insert(const key& key1, const info& info1){ return container.insert(key1, info1); };
-    bool insert_or_assign(const key& key1, const info& info1){ return container.insert_or_assign(key1, info1); };
-    bool emplace(key& key1, info& info1){ return container.emplace(key1, info1); };
-    bool emplace(const key&& key1, info&& info1){};
-    bool try_emplace(const key& key1, const info& info1){ return container.try_emplace(key1, info1); };
-    bool try_emplace(const key&& key1, const info&& info1){ return container.try_emplace(key1, info1); };
+    /// checks if values under both iterators are the same
+    bool equal_values(Iter i1, Iter i2){ return *(i1._ptr) && *(i2._ptr) && *i1._ptr == *i2._ptr; }
 
-    bool swap(dictionary other){ return container.swap(other.container); };
-    bool merge(dictionary other){ return container.merge(other.container); };
+    Iter begin(){ return container.begin(); }
+    Iter end(){ return container.end(); }
 
-    bool contains(const key& key1) const{ return container.contains(key1); };
-    bool find(const key& key1){ return container.find(key1); };
-    bool find(const key& key1) const { return container.find(key1); };
-    int count(const key& key1) const { return container.count(key1); };
+    [[nodiscard]] bool empty() const noexcept { return container.empty(); };
+    [[nodiscard]] size_t size() const noexcept {return container.size(); };
 
-    bool operator==(dictionary other) const { return container == other.container; };
+    /// returns position of where node is (or SHOULD be)
+    /// \param key Key value to compare against
+    /// \return bool for if Key is in the position, false otherwise
+    std::pair<Iter, bool> find(const Key& key) {return container.find(key); };
+    Info& at(const Key& key) { return container.at(key); };
+    Info& operator[](Key&& key) { return container[key]; };
+    Info& operator[](const Key& key) { return container[key]; }
+
+    void clear() noexcept { container.clear(); };
+
+    std::pair<Iter, bool> insert(std::pair<Key, Info>&& pair) { return container.insert(); };
+    std::pair<Iter, bool> insert(std::pair<Key, Info>& pair) { return insert(std::move(pair)); };
+
+    std::pair<Iter, bool> insert_or_assign(Key&& key, Info&& info) { return insert_or_assign(key, info); };
+    std::pair<Iter, bool> insert_or_assign(const Key& key, Info& info) { return insert_or_assign(key, info); };
+
+    std::pair<Iter, bool> emplace(Key&& key, Info&& info) { return emplace(key, info); };
+    std::pair<Iter, bool> emplace(const Key& key, Info& info) { return emplace(key, info); };
+
+    Iter erase(Iter pos) { return container.erase(pos); };
+    Iter erase(Iter first, const Iter& last) { return container.erase(first, last); };
+    size_t erase(const Key& k) { return container.erase(k); };
+
+    void swap(dictionary& other) noexcept { container.swap(other); };
+
+    size_t count(const Key& key) const { return std::count(begin(), end(), {key, {}}); };
+    bool contains(const Key& key) const { return container.contains(key); };
+
+    bool operator==(const dictionary& other) const { return std::equal(begin(), end(), other.end()); }
+    bool operator!=(const dictionary& other) const { return !std::equal(begin(), end(), other.end()); }
 };
+
+
+template<typename Key, typename Info>
+dictionary<Key, Info> join(const dictionary<Key,Info>& first, const dictionary<Key,Info>& second){
+    sllist<Key, Info> new_list;
+    std::set_union(first.begin(), first.end(), second.begin(), second.end(), new_list.begin());
+    return dictionary{new_list};
+}
 
 
 #endif //LABS_DICTIONARY_H

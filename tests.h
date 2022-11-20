@@ -47,7 +47,7 @@ void print_map(iter begin, iter end){
 }
 
 void test_normal(){
-    sllist<int,int> map{};
+    std::map<int,int> map{};
     map.emplace(1,1);
     print_map(map.begin(), map.end());
 }
