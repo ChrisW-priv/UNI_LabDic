@@ -143,6 +143,7 @@ public:
 
 template<typename Key, typename Info>
 sllist<Key, Info>::sllist(std::initializer_list<std::pair<Key, Info>> list) {
+    std::sort(list.begin(), list.end());
     auto curr = begin();
     for (auto pair: list) {
         auto new_node = alloc_node(pair);
