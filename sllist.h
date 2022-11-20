@@ -1,6 +1,8 @@
 #ifndef LABS_SLLIST_H
 #define LABS_SLLIST_H
 
+#include <optional>
+
 template<typename Key, typename Info>
 class sllist{
     struct node {
@@ -19,6 +21,20 @@ class sllist{
 
     node* head;
 
+    /// inserts node under pointer after iterator element.
+    /// WARNING: will cause segFault if node_ptr = nullptr!!
+    template<typename Iter>
+    void insert_after(Iter iterator, node* node_ptr){
+        node_ptr->_next = *(iterator._ptr);
+        *iterator._ptr = node_ptr;
+    }
+
+    node* alloc_node(std::pair<Key, Info>&& pair){
+        node* new_node = new node;
+        new_node->pair = pair;
+        return new_node;
+    }
+
 public:
     // constructor
     sllist(): head(nullptr) {};
@@ -28,9 +44,10 @@ public:
     // destructor
     ~sllist() { clear(); }
 
-    struct Iter{
+    class Iter{
         node** _ptr;
 
+    public:
         explicit Iter(node** ptr) : _ptr(ptr) {}
         Iter(const Iter& other): _ptr(other._ptr) {}
 
@@ -69,49 +86,24 @@ public:
         /// checks if pointers point to the same node
         /// \param other Iter: iterator we compare with
         /// \return bool, true if pointers point to the same node
-        bool operator==(const Iter& other){ return (*_ptr) == (*other._ptr); }
+        bool operator==(const Iter& other){ return (*_ptr) == *(other._ptr); }
 
         /// opposite to operator==
         /// \param other Iter: iterator we compare with
         /// \return bool, true if pointers don't point to the same node
-        bool operator!=(const Iter& other){ return (*_ptr) != (*other._ptr); }
+        bool operator!=(const Iter& other){ return (*_ptr) != *(other._ptr); }
 
-        /// Returns reference to the node Iter points to
-        /// Caution: this results in the exposition of raw node type which is currently private
-        /// \return node reference
-        node& operator*(){ return **_ptr; }
+        /// Returns reference to the pair under node it points to
+        /// \return reference to pair under node
+        std::optional<std::pair<Key, Info>&> operator*(){ if (*_ptr) return (**_ptr).pair; else return {}; }
 
-        /// Returns pointer to the node Iter points to
-        /// Caution: this results in the exposition of raw node type which is currently private
-        /// \return node ptr
-        node* operator->(){ return *_ptr; }
+        /// Returns reference to the pair under node it points to
+        /// \return reference to pair under node
+        std::pair<Key, Info>* operator->(){ return *_ptr ? &(**_ptr).pair : nullptr; }
     };
 
     /// checks if values under both iterators are the same
     bool equal_values(Iter i1, Iter i2){ return *(i1._ptr) && *(i2._ptr) && *i1._ptr == *i2._ptr; }
-
-    /// inserts node under pointer after iterator element.
-    /// WARNING: will cause segFault if node_ptr = nullptr!!
-    void insert_after(Iter iterator, node* node_ptr){
-        node_ptr->_next = *(iterator._ptr);
-        *iterator._ptr = node_ptr;
-    }
-
-    node* alloc_node(std::pair<Key, Info>&& pair){
-        node* new_node = new node;
-        new_node->pair = pair;
-        return new_node;
-    }
-
-    /// Deallocates the node and links the nodes in the list
-    /// Same as operator++ - can be optimised after debugs to just body of if and skip if statements
-    void dealloc_node(Iter iterator){
-        if (*iterator._ptr) {
-            auto next = (*iterator._ptr)->_next;
-            delete *iterator._ptr;
-            *iterator._ptr = next;
-        } else return;
-    }
 
     Iter begin(){ return Iter{head}; }
     Iter end(){ return Iter{nullptr}; }
@@ -163,7 +155,7 @@ template<typename Key, typename Info>
 sllist<Key, Info>::sllist(const sllist &list) {
     auto curr = begin();
     for (auto node: list) {
-        auto new_node = alloc_node(node.pair);
+        auto new_node = alloc_node(*node);
         curr = insert_after(curr, new_node);
     }
 }
@@ -190,7 +182,7 @@ template<typename Key, typename Info>
 Info& sllist<Key, Info>::at(const Key &key) {
     auto [position, found] = find(key);
     if (!found) throw std::out_of_range("Element not in the container");
-    return (*position).pair.second;
+    return (*position).second;
 }
 
 template<typename Key, typename Info>
@@ -201,14 +193,14 @@ Info &sllist<Key, Info>::operator[](Key&& key) {
         insert_after(position, new_node);
         return new_node->pair.second; // return new info reference
     }
-    return (*position).pair.second; // return reference to an existing value
+    return (*position).second; // return reference to an existing value
 }
 
 template<typename Key, typename Info>
 void sllist<Key, Info>::clear() noexcept {
     auto current = begin();
     while (current != end()){
-        dealloc_node(current); // changes value of current to next value after deletion, no ++curr needed!
+        erase(current); // changes value of current to next value after deletion, no ++curr needed!
     }
 }
 
@@ -224,7 +216,7 @@ std::pair<typename sllist<Key,Info>::Iter, bool> sllist<Key, Info>::insert(std::
 template<typename Key, typename Info>
 std::pair<typename sllist<Key,Info>::Iter, bool> sllist<Key, Info>::insert_or_assign(Key &&key, Info&& info) {
     auto [position, found] = find(key);
-    if (found) { *position.pair.second = info; return {position, false}; }
+    if (found) { *position.second = info; return {position, false}; }
     auto new_node = alloc_node({key, info});
     insert_after(position, new_node);
     return {new_node, true};
@@ -241,13 +233,18 @@ std::pair<typename sllist<Key,Info>::Iter, bool> sllist<Key, Info>::emplace(Key 
 
 template<typename Key, typename Info>
 typename sllist<Key,Info>::Iter sllist<Key, Info>::erase(sllist::Iter pos) {
-    dealloc_node(pos);
+    if (pos != end()) {
+        auto next = (*pos._ptr)->_next;
+        delete *pos._ptr;
+        *pos._ptr = next;
+    }
+
     return pos;
 }
 
 template<typename Key, typename Info>
 typename sllist<Key,Info>::Iter sllist<Key, Info>::erase(sllist::Iter first, const sllist::Iter& last) {
-    while (first != last) { dealloc_node(first); }
+    while (first != last) { erase(first); }
     return first;
 }
 
@@ -255,7 +252,7 @@ template<typename Key, typename Info>
 size_t sllist<Key, Info>::erase(const Key &key) {
     auto [position, found] = find(key);
     if (!found) return 0;
-    dealloc_node(position);
+    erase(position);
     return 1;
 }
 
@@ -270,7 +267,7 @@ template< class Key, class Info, class Pred >
 size_t erase_if( sllist<Key, Info>& c, Pred pred ){
     size_t count = 0;
     for (auto curr = c.begin(); curr != c.end();){
-        if (pred((*curr).pair)) { ++count; c.erase(curr); }
+        if (pred(*curr)) { ++count; c.erase(curr); }
         else ++curr;
     }
     return count;
