@@ -10,8 +10,10 @@
 // 0 - fail
 
 template<typename T>
-void compare_with_expected(T value_expected, T value_returned){
-    std::cout << ((value_expected == value_returned) ? "PASS\n" : "FAIL\n");
+void compare_with_expected(T value_expected, T value_returned, const std::string& description="", std::ostream& stream = std::cout){
+    stream << ((value_expected == value_returned) ? "PASS" : "FAIL");
+    stream << (description.empty() ? description : ": " + description);
+    stream << "\n";
 }
 
 void run_tests(){
@@ -38,7 +40,26 @@ void run_tests(){
     dictionary<int, int> compare_cpy{compare};
     compare_with_expected(compare, compare_cpy);
 
+    dic.erase(3);
+    dictionary<int,int> comp2{ {1,1}, {2,2} };
+    compare_with_expected(dic, comp2);
 
+    dictionary<int,int> comp3{comp2};
+    comp2.insert( {3,3} );
+    comp2.swap(comp3);
+    compare_with_expected(comp2, dic);
+    compare_with_expected(comp3, compare);
+
+    std::cout<< "============================================\n";
+    std::cout<< "HERE WE START TESTING OF JOIN!!\n";
+    std::cout<< "============================================\n";
+
+    dictionary<int,int> dic_to_join{ {3,4}, {5,6}, {4,5} };
+    std::cout << dic;
+    std::cout << dic_to_join;
+
+    auto dic_result = join(dic, dic_to_join);
+    std::cout << dic_result;
 };
 
 template<typename iter>

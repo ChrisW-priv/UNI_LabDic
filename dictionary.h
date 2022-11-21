@@ -9,6 +9,7 @@ template<typename Key, typename Info>
 class dictionary{
     sllist<Key, Info> container;
     using Iter=typename sllist<Key, Info>::Iter;
+    using constIter=typename sllist<Key, Info>::constIter;
 
 public:
     // constructor
@@ -25,7 +26,8 @@ public:
     bool equal_values(Iter i1, Iter i2){ return *(i1._ptr) && *(i2._ptr) && *i1._ptr == *i2._ptr; }
 
     Iter begin(){ return container.begin(); }
-    Iter end(){ return container.end(); }
+    constIter begin() const { return container.begin(); }
+    constIter end() const { return container.end(); }
 
     [[nodiscard]] bool empty() const noexcept { return container.empty(); };
     [[nodiscard]] size_t size() const noexcept {return container.size(); };
@@ -53,7 +55,7 @@ public:
     Iter erase(Iter first, const Iter& last) { return container.erase(first, last); };
     size_t erase(const Key& k) { return container.erase(k); };
 
-    void swap(dictionary& other) noexcept { container.swap(other); };
+    void swap(dictionary& other) noexcept { container.swap(other.container); };
 
     size_t count(const Key& key) const { return container.count(key); };
     bool contains(const Key& key) const { return container.contains(key); };
