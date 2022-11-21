@@ -13,7 +13,7 @@ class dictionary{
 public:
     // constructor
     dictionary(): container() {};
-    dictionary(std::initializer_list< std::pair<Key, Info> >&& list): container(list) {};
+    dictionary(std::initializer_list< std::pair<Key, Info> > list): container(list) {};
     explicit dictionary(sllist<Key, Info>& list) :container() { container.swap(list); }
 
     // copy
@@ -60,6 +60,11 @@ public:
 
     bool operator==(const dictionary& other) const { return container == other.container; }
     bool operator!=(const dictionary& other) const { return container != other.container; }
+
+    friend std::ostream& operator<<(std::ostream& stream, const dictionary<Key, Info>& dic){
+        stream << dic.container;
+        return stream;
+    }
 };
 
 

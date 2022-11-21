@@ -26,17 +26,18 @@ class sllist{
         }
     };
 
-    node* head;
+    node* head = nullptr;
 
     /// inserts node under pointer after iterator element.
     /// WARNING: will cause segFault if node_ptr = nullptr!!
+    /// modifies the iterator passed!
     template<typename Iter>
     static void insert_after(Iter iterator, node* node_ptr){
         node_ptr->_next = *(iterator._ptr);
         *iterator._ptr = node_ptr;
     }
 
-    static node* alloc_node(std::pair<Key, Info>&& pair){
+    static node* alloc_node(std::pair<Key, Info> pair){
         node* new_node = new node;
         new_node->pair = pair;
         return new_node;
@@ -55,7 +56,7 @@ class sllist{
 public:
     // constructor
     sllist(): head(nullptr) {};
-    sllist(std::initializer_list< std::pair<Key, Info> >&& list);
+    sllist(std::initializer_list< std::pair<Key, Info> > list);
     // copy
     sllist(const sllist& list);
     // destructor
@@ -84,7 +85,7 @@ public:
         /// Note: when debugging is done, body can be changed to just _ptr = `(*_ptr)->_next;` for better performance
         Iterator& operator++()
         {
-            if (*_ptr) { _ptr = &(*_ptr)->_next; }
+            if (*_ptr) { _ptr = &((*_ptr)->_next); }
             return *this;
         }
 
@@ -164,24 +165,30 @@ public:
 
     bool operator==(const sllist& other) const { return std::equal(begin(), end(), other.begin()); }
     bool operator!=(const sllist& other) const { return !std::equal(begin(), end(), other.begin()); }
+
+    friend std::ostream& operator<<(std::ostream& stream, const sllist<Key, Info>& list){
+        stream << "{ ";
+        for (auto node : list){
+            stream << " { " << node.pair.first << "," << node.pair.second << " },";
+        }
+        stream << " }\n";
+        return stream;
+    }
 };
 
 template<typename Key, typename Info>
-sllist<Key, Info>::sllist(std::initializer_list<std::pair<Key, Info>>&& list) {
-    std::sort(list.begin(), list.end());
-    auto curr = begin();
-    for (auto pair: list) {
-        auto new_node = alloc_node(pair);
-        curr = insert_after(curr, new_node);
-    }
+sllist<Key, Info>::sllist(std::initializer_list<std::pair<Key, Info>> list) {
+    // here we have on idea if the list provided is sorted so just use insert
+    for (auto pair: list) { insert(pair); }
 }
 
 template<typename Key, typename Info>
 sllist<Key, Info>::sllist(const sllist &list) {
-    auto curr = begin();
+    head = nullptr; // make sure head is initialised!
+    Iter curr = begin();
     for (auto node: list) {
-        auto new_node = alloc_node(*node);
-        curr = insert_after(curr, new_node);
+        auto new_node = alloc_node(node.pair);
+        insert_after(curr, new_node);
     }
 }
 
@@ -232,10 +239,10 @@ void sllist<Key, Info>::clear() noexcept {
 template<typename Key, typename Info>
 std::pair<typename sllist<Key,Info>::Iter, bool> sllist<Key, Info>::insert(std::pair<Key, Info> &&pair) {
     auto [position, found] = find(pair.first);
-    if (found) return {position, false};
+    if (found) return std::make_pair(position, false);
     auto new_node = alloc_node(std::move(pair));
     insert_after(position, new_node);
-    ++position; // points to our new_node
+    ++position; // points to our new_node (inserted one)
     return std::make_pair(position, true);
 }
 

@@ -11,7 +11,7 @@
 
 template<typename T>
 void compare_with_expected(T value_expected, T value_returned){
-    std::cout << ((value_expected == value_returned) ? "PASS" : "FAIL");
+    std::cout << ((value_expected == value_returned) ? "PASS\n" : "FAIL\n");
 }
 
 void run_tests(){
@@ -24,10 +24,25 @@ void run_tests(){
     compare_with_expected((size_t) 0, ret2);
 
     std::pair p1{1,1};
-    std::pair p2{2,2};
     dic.insert(p1);
-    dic.insert(p2);
+    dic.insert(std::pair{2,2});
     compare_with_expected(true, dic.contains(1));
+    compare_with_expected(true, dic.contains(2));
+    compare_with_expected(false, dic.contains(3));
+
+    size_t c = dic.count(1);
+    compare_with_expected((size_t) 1, c);
+
+    size_t c2 = dic.count(3);
+    compare_with_expected((size_t) 0, c2);
+
+    dictionary<int,int> compare{ {1,1}, {2,2} };
+
+    compare_with_expected(dic, compare);
+    dictionary<int, int> compare_cpy{compare};
+    std::cout << compare_cpy;
+    std::cout << compare;
+    compare_with_expected(compare, compare_cpy);
 };
 
 template<typename iter>
@@ -36,12 +51,6 @@ void print_map(iter begin, iter end){
         std::cout << "Key:" << begin->first << " Value:" << begin->second << "\n";
         ++begin;
     }
-}
-
-void test_normal(){
-    std::map<int,int> map{};
-    map.emplace(1,1);
-    print_map(map.begin(), map.end());
 }
 
 #endif
