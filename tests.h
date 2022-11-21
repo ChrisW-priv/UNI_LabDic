@@ -36,7 +36,11 @@ void run_tests(){
     size_t c2 = dic.count(3);
     compare_with_expected((size_t) 0, c2);
 
-    dictionary<int,int> compare{ {1,1}, {2,2} };
+    dic.insert( {3,3} );
+
+    dictionary<int,int> compare{ {1,1}, {2,2}, {3,3} };
+    std::cout << dic;
+    std::cout << compare;
 
     compare_with_expected(dic, compare);
     dictionary<int, int> compare_cpy{compare};
