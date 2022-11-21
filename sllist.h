@@ -2,6 +2,7 @@
 #define LABS_SLLIST_H
 
 #include <algorithm>
+#include <any>
 
 template<typename Key, typename Info>
 class sllist{
@@ -49,6 +50,8 @@ class sllist{
         }
     }
 
+    constexpr static node* END = nullptr;
+
 public:
     // constructor
     sllist(): head(nullptr) {};
@@ -59,11 +62,11 @@ public:
     ~sllist() { clear(); }
 
     template<typename PtrType>
-    struct Iterator : std::iterator<std::forward_iterator_tag, PtrType, PtrType, PtrType>{
-        PtrType _ptr;
+    struct Iterator : std::iterator<std::forward_iterator_tag, PtrType, size_t>{
+        PtrType* _ptr;
         using iterator_category = std::forward_iterator_tag;
 
-        explicit Iterator(PtrType ptr) { _ptr = ptr; }
+        explicit Iterator(PtrType* ptr) { _ptr = ptr; }
         Iterator(Iterator<PtrType>& other): _ptr(other._ptr) {}
 
         /// Insert new node at the place of the old one
@@ -97,12 +100,14 @@ public:
         /// checks if pointers point to the same node
         /// \param other Iter: iterator we compare with
         /// \return bool, true if pointers point to the same node
-        bool operator==(const Iterator& other){ return (*_ptr) == *(other._ptr); }
+        template<std::equality_comparable_with<PtrType> U>
+        [[nodiscard]] bool operator==( const Iterator<U>& other ) const { return (*_ptr) == *(other._ptr); }
 
         /// opposite to operator==
         /// \param other Iter: iterator we compare with
         /// \return bool, true if pointers don't point to the same node
-        bool operator!=(const Iterator& other){ return (*_ptr) != *(other._ptr); }
+        template<std::equality_comparable_with<PtrType> U>
+        [[nodiscard]] bool operator!=( const Iterator<U>& other ) const { return (*_ptr) != *(other._ptr); }
 
         /// Returns reference to the pair under node it points to
         /// \return reference to pair under node
@@ -114,13 +119,12 @@ public:
         node* operator->(){ return *_ptr; }
     };
 
-    typedef Iterator<node**> Iter;
-    typedef Iterator<node* const*> constIter;
+    typedef Iterator<node*> Iter;
+    typedef Iterator<node* const> constIter;
 
     Iter begin(){ return Iter{&head}; }
     constIter begin() const { return constIter{&head}; }
-    Iter end(){ return Iter{nullptr}; }
-    constIter end() const{ return constIter{nullptr}; }
+    constIter end() const { return constIter{&END}; }
 
     [[nodiscard]] bool empty() const noexcept { return head == nullptr; };
     [[nodiscard]] size_t size() const noexcept;
