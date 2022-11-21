@@ -17,36 +17,28 @@ void compare_with_expected(T value_expected, T value_returned){
 void run_tests(){
     dictionary<int, int> dic{};
 
-    bool ret1 = dic.empty();
-    compare_with_expected(true, ret1);
-
-    size_t ret2 = dic.size();
-    compare_with_expected((size_t) 0, ret2);
+    compare_with_expected(true, dic.empty());
+    compare_with_expected((size_t) 0, dic.size());
 
     std::pair p1{1,1};
     dic.insert(p1);
-    dic.insert(std::pair{2,2});
+    dic.insert( {2,2} );
+
     compare_with_expected(true, dic.contains(1));
     compare_with_expected(true, dic.contains(2));
     compare_with_expected(false, dic.contains(3));
-
-    size_t c = dic.count(1);
-    compare_with_expected((size_t) 1, c);
-
-    size_t c2 = dic.count(3);
-    compare_with_expected((size_t) 0, c2);
+    compare_with_expected(false, dic.empty());
+    compare_with_expected((size_t) 1, dic.count(1));
+    compare_with_expected((size_t) 0, dic.count(3));
 
     dic.insert( {3,3} );
-
     dictionary<int,int> compare{ {1,1}, {2,2}, {3,3} };
-    std::cout << dic;
-    std::cout << compare;
 
     compare_with_expected(dic, compare);
     dictionary<int, int> compare_cpy{compare};
-    std::cout << compare_cpy;
-    std::cout << compare;
     compare_with_expected(compare, compare_cpy);
+
+
 };
 
 template<typename iter>

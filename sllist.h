@@ -33,7 +33,7 @@ class sllist{
     /// modifies the iterator passed!
     template<typename Iter>
     static void insert_after(Iter iterator, node* node_ptr){
-        node_ptr->_next = *(iterator._ptr);
+        node_ptr->_next = *iterator._ptr;
         *iterator._ptr = node_ptr;
     }
 
@@ -137,7 +137,7 @@ public:
     /// returns position of where node is (or SHOULD be)
     /// \param key key value to compare against
     /// \return bool for if key is in the position, false otherwise
-    std::pair<const Iter, bool> find(const Key& key) const { return find(key); };
+    std::pair<constIter, bool> find(const Key& key) const { return find(key); };
 
     Info& at(const Key& key);
     Info& operator[](Key&& key);
@@ -185,10 +185,11 @@ sllist<Key, Info>::sllist(std::initializer_list<std::pair<Key, Info>> list) {
 template<typename Key, typename Info>
 sllist<Key, Info>::sllist(const sllist &list) {
     head = nullptr; // make sure head is initialised!
-    Iter curr = begin();
+    auto last_node = begin();
     for (auto node: list) {
         auto new_node = alloc_node(node.pair);
-        insert_after(curr, new_node);
+        insert_after(last_node, new_node);
+        ++last_node;
     }
 }
 
