@@ -163,6 +163,8 @@ public:
     size_t count(const Key& key) const { return std::count(begin(), end(), node{key, Info{}}); };
     bool contains(const Key& key) const { return std::find(begin(), end(), node{key, Info{}}) != end(); };
 
+    void merge(const sllist& other);
+
     bool operator==(const sllist& other) const { return std::equal(begin(), end(), other.begin()); }
     bool operator!=(const sllist& other) const { return !std::equal(begin(), end(), other.begin()); }
 
@@ -292,6 +294,27 @@ void sllist<Key, Info>::swap(sllist &other) noexcept {
     auto temp = this->head;
     this->head = other.head;
     other.head = temp;
+}
+
+template<typename Key, typename Info>
+void sllist<Key, Info>::merge(const sllist &other) {
+    auto curr1 = begin();
+    auto curr2 = other.begin();
+    while (curr1 != end() && curr2 != end()){
+        if (*curr1 < *curr2) { ++curr1; continue; }
+        if (*curr1 == *curr2) { ++curr2; continue; }
+        auto node_cpy = alloc_node((*curr2).pair);
+        insert_after(curr1, node_cpy);
+        ++curr2;
+    }
+    if (curr1 == end()){
+        while (curr2 != end()) {
+            auto node_cpy = alloc_node((*curr2).pair);
+            insert_after(curr1, node_cpy);
+            ++curr2;
+            ++curr1;
+        }
+    }
 }
 
 template< class Key, class Info, class Pred >

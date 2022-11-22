@@ -60,6 +60,8 @@ public:
     size_t count(const Key& key) const { return container.count(key); };
     bool contains(const Key& key) const { return container.contains(key); };
 
+    void merge(const dictionary& other) { container.merge(other.container); }
+
     bool operator==(const dictionary& other) const { return container == other.container; }
     bool operator!=(const dictionary& other) const { return container != other.container; }
 
@@ -72,9 +74,13 @@ public:
 
 template<typename Key, typename Info>
 dictionary<Key, Info> join(const dictionary<Key,Info>& first, const dictionary<Key,Info>& second){
-    sllist<Key, Info> new_list;
-    std::set_union(first.begin(), first.end(), second.begin(), second.end(), new_list.begin());
-    return dictionary{new_list};
+/// below is code that I want to implement but this meant another rework of iterator, for now just implement custom merge
+//    sllist<Key, Info> new_list;
+//    std::set_union(first.begin(), first.end(), second.begin(), second.end(), new_list.begin());
+//    return dictionary{new_list};
+    dictionary new_dict{first};
+    new_dict.merge(second);
+    return new_dict;
 }
 
 
