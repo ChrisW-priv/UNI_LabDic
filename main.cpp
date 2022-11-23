@@ -3,5 +3,9 @@
 
 
 int main() {
-    run_tests();
+    std::cout << "TEST OF dictionary<int,int>:\n";
+    test_intint();
+
+    std::cout << "TEST OF dictionary<std::string,int>:\n";
+    test_stringint();
 }
