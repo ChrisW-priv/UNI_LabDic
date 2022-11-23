@@ -140,8 +140,8 @@ public:
     std::pair<constIter, bool> find(const Key& key) const { return find(key); };
 
     Info& at(const Key& key);
-    Info& operator[](Key&& key);
-    Info& operator[](const Key& key) { return (*this)[std::move(key)]; }
+    Info& operator[](Key&& key){ return (*this)[key]; }
+    Info& operator[](const Key& key);
 
     void clear() noexcept;
 
@@ -221,8 +221,8 @@ Info& sllist<Key, Info>::at(const Key &key) {
 }
 
 template<typename Key, typename Info>
-Info &sllist<Key, Info>::operator[](Key&& key) {
-    auto [position, found] = find(key);
+Info &sllist<Key, Info>::operator[](const Key& key) {
+    auto [position, found] = find(std::move(key));
     if (!found){
         auto new_node = alloc_node( {key, {}} );
         insert_after(position, new_node);

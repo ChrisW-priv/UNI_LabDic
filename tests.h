@@ -35,7 +35,14 @@ void test_intint(){
     compare_with_expected((size_t) 1, dic.count(1), "test of count method");
     compare_with_expected((size_t) 0, dic.count(3), "test of count method [2]");
 
-    dic.insert( {3,3} );
+    auto info3 = dic[3];
+    auto info3comp = dic.at(3);
+    compare_with_expected(info3comp, info3, "test of operator[] in \"insert\" mode");
+
+    info3 = 3;
+    info3comp = dic.at(3);
+    compare_with_expected(info3comp, info3, "test of operator[] allowing later change of data");
+
     dictionary<int,int> compare{ {1,1}, {2,2}, {3,3} };
 
     compare_with_expected(dic, compare, "copy of init list constructor");
